@@ -1,5 +1,5 @@
 float right;
-float rightvalue = 0.85;
+float rightvalue = 1.00;
 
 void setup() {
   pinMode(12, OUTPUT); //Initiates Motor Channel A pin
@@ -18,6 +18,8 @@ void setup() {
 
   pinMode(A4, INPUT);//ir
 
+  //Serial.begin(9600);
+
 }
 
 void loop() {
@@ -28,12 +30,13 @@ void loop() {
 
 
   if (right > rightvalue){
-    analogWrite(11, 127);
-    analogWrite(3, 63);
+    analogWrite(11, 127);//left motor
+    analogWrite(3, 63);//right motor
+    //Serial.println("Turn Right");
   }
   else{
-  analogWrite(11, 127);
-  analogWrite(3, 95);
+  analogWrite(11, 112);//left motor
+  analogWrite(3, 127);//right motor
   }
 
 }
