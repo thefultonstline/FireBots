@@ -1,6 +1,19 @@
+/*
+ * 
+Function          Channel A   Channel B
+Direction         Digital 12  Digital 13
+Speed (PWM)       Digital 3   Digital 11
+Brake             Digital 9    Digital 8
+Current Sensing     Analog 0  Analog 1
+ */
+
+//LEFT = B
+//RIGHT = A
+
+
 float right;
 float rightwallvalue = 2.5;
-float rightturnvalue = 1.2;
+float rightturnvalue = 1.0;
 
 float leftMotorForward = 127;
 float rightMotorForward = 127;
@@ -18,12 +31,11 @@ void setup() {
   digitalWrite(9,LOW);
   digitalWrite(8,LOW);//disengage brakes
 
-  digitalWrite(12,0);
-  digitalWrite(13,1);//direction
+  digitalWrite(12,1);
+  digitalWrite(13,0);//direction
 
   pinMode(A4, INPUT);//ir
 
-  pinMode(5, OUTPUT);
 
   Serial.begin(9600);
 
@@ -36,16 +48,15 @@ right = (analogRead(A4))*5.0/1024.0;
   
   if (right < rightwallvalue){
     //Turn Right
-    digitalWrite(5, HIGH);
+    digitalWrite(5, LOW);
     analogWrite(11, 127);//left motor
     analogWrite(3, 63);//right motor
   }
   if (right >= rightwallvalue){
     //GO Straight
-     digitalWrite(5, LOW);
-  analogWrite(11, 123);//left motor
-  analogWrite(3, 127);//right motor
-  
+    digitalWrite(5, HIGH);
+    analogWrite(11, leftMotorForward);//left motor
+    analogWrite(3, rightMotorForward);//right motor
   }
   
 
