@@ -79,7 +79,7 @@ void loop() {
    Serial.print(" ");
    Serial.println(rightcurrentaverage);
    
-   if (rightcurrentaverage >= 0.7 || leftcurrentaverage >= 0.7){
+   if (rightcurrentaverage >= 0.4 || leftcurrentaverage >= 0.4){
         backupAndTurnLeft();
     }
 
@@ -106,13 +106,17 @@ void loop() {
       //check if we are already turning right
       leftspeed = 127;
       rightspeed = 31;
+      analogWrite(leftmotor, leftspeed);
+      analogWrite(rightmotor, rightspeed);
     }
     else{//not turning right      
       leftspeed = 0;
       rightspeed = 127;
+      analogWrite(leftmotor, leftspeed);
+      analogWrite(rightmotor, rightspeed);
+      delay(500);
     }
-    analogWrite(leftmotor, leftspeed);
-    analogWrite(rightmotor, rightspeed);
+    
    } 
   
 }
