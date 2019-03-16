@@ -13,7 +13,7 @@ Current Sensing     Analog 0  Analog 1
 
 float right;
 float rightturnvalue = 1.7;
-float rightclose = 2.75;
+float rightclose = 2.7;
 float front;
 
 unsigned const char fronttrigger = 7;
@@ -73,15 +73,15 @@ void loop() {
    right = (analogRead(A4))*5.0/1024.0;
    front = ultrasonic(fronttrigger, frontecho);
 
-   amperage();
+   
+   if (front <= 5 || stuck()){
+        backupAndTurnLeft();
+        arrayclear();
+    }
 
    Serial.print(leftcurrentaverage);
    Serial.print(" ");
    Serial.println(rightcurrentaverage);
-   
-   if (rightcurrentaverage >= 0.4 || leftcurrentaverage >= 0.4){
-        backupAndTurnLeft();
-    }
 
    if (front > 20){
     if (right < rightturnvalue){
@@ -101,7 +101,7 @@ void loop() {
     analogWrite(rightmotor, rightspeed);
    }
 
-   else{ //front is <20 -too close to wall
+   else if (front <= 20 && front > 5){ //front is <20 -too close to wall
     if (right < rightturnvalue){
       //check if we are already turning right
       leftspeed = 127;
@@ -114,14 +114,23 @@ void loop() {
       rightspeed = 127;
       analogWrite(leftmotor, leftspeed);
       analogWrite(rightmotor, rightspeed);
-      delay(500);
+     // delay(500);
     }
     
    } 
   
 }
 
-void amperage(){
+void arrayclear(){
+  for (int i = 0; i <100; i++){
+    leftcurrent[i] = 0;
+    rightcurrent[i] = 0;
+  }
+  leftcurrenttotal = 0;
+  rightcurrenttotal = 0;
+}
+
+bool stuck(){
 
    float temp;
 
@@ -153,6 +162,8 @@ void amperage(){
 
    leftcurrentaverage =  leftcurrenttotal/100.0;
    rightcurrentaverage = rightcurrenttotal/100.0;
+
+   return rightcurrentaverage >= 0.4 || leftcurrentaverage >= 0.4;
 }
 
 
@@ -162,14 +173,22 @@ void backupAndTurnLeft(){
   //run motors backward
   digitalWrite(12,1);
   digitalWrite(13,1);
-  analogWrite(3, 127);
-  analogWrite(11, 127);
+
+  leftspeed = 127;
+  rightspeed = 127;
+  analogWrite(rightmotor, rightspeed);
+  analogWrite(leftmotor, leftspeed);
+
   delay(500);
+
+  //change back to forward
   digitalWrite(12,0);
   digitalWrite(13,0);
 //turnleft
-  analogWrite(3, 127);
-  analogWrite(11, 0);
+  leftspeed = 0;
+  rightspeed = 127;
+  analogWrite(rightmotor, rightspeed);
+  analogWrite(leftmotor, leftspeed);
   delay(1000);
 }
 
