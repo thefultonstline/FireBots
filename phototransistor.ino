@@ -24,11 +24,13 @@ unsigned const char frontecho = 10;
 int leftspeed;
 int rightspeed;
 
-float front;
+long front;
 
 void setup() {
   // put your setup code here, to run once:
+  digitalWrite(fanmotor, LOW);
   pinMode(A5, INPUT);
+  pinMode(A4, INPUT);
 
   pinMode(12, OUTPUT); //Initiates Motor Channel A pin
   pinMode(9, OUTPUT); //Initiates Brake Channel A pin
@@ -37,70 +39,41 @@ void setup() {
   pinMode(13, OUTPUT); //Initiates Motor Channel B pin
   pinMode(8, OUTPUT);  //Initiates Brake Channel B pin
 
-  pinMode(10, INPUT);//ultrasonics
-  pinMode(7, OUTPUT);
-  
+  digitalWrite(9,LOW);
+  digitalWrite(8,LOW);//disengage brakes
+
+  digitalWrite(12,0);
+  digitalWrite(13,0);//direction
+
+  Serial.begin(9600);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  leftphototransistor = analogRead(A5)/1024.0*5.0;
-  rightphototransistor = analogRead(A4)/1024.0*5.0;
+  rightphototransistor = (analogRead(A4))*5.0/1024.0;
+  leftphototransistor = (analogRead(A5))*5.0/1024.0;
 
-  if (rightphototransistor >= 0.1){
-    extinguish();
-  }
-  if (leftphototransistor >= 0.1){
-    rightspeed = 127;
-    leftspeed = 0;
-    analogWrite(leftmotor, leftspeed);
-    analogWrite(rightmotor, rightspeed);
-    delay(1000);
-    extinguish();
-  }
-
-  leftspeed = 127;
-  rightspeed = 127;
-
-  analogWrite(leftmotor, leftspeed);
-  analogWrite(rightmotor, rightspeed);
   
-}
+  Serial.print(leftphototransistor);
+  Serial.print("\t");
+  Serial.println(rightphototransistor);
+  
 
-
-void extinguish(){
-  while(1){
-    if (front <= 5 && (rightphototransistor >= 0.2)){//time to extinguish the fire
-      digitalWrite(9, HIGH);
-      digitalWrite(8,HIGH);//stop moving
-      digitalWrite(fanmotor, HIGH);//turn on fan 
-    }
-
+  if (leftphototransistor >= 0.5 || rightphototransistor >= 0.5){
     if (leftphototransistor > rightphototransistor){
-      leftspeed = 31;
-      rightspeed = 63;
+      analogWrite(rightmotor, 63);
+      analogWrite(leftmotor, 31);
+      Serial.println("Turn Left");
     }
-    else if(leftphototransistor <= rightphototransistor){
-      leftspeed = 63;
-      rightspeed = 31;
+    else if(rightphototransistor > leftphototransistor){
+      analogWrite(rightmotor, 31);
+      analogWrite(leftmotor, 63);
+      Serial.println("Turn Right");
     }
-    analogWrite(leftmotor, leftspeed);
-    analogWrite(rightmotor, rightspeed);
-    
-    leftphototransistor = analogRead(A5)/1024.0*5.0;
-    rightphototransistor = analogRead(A4)/1024.0*5.0;
-    front = ultrasonic(fronttrigger, frontecho);
+
+    if (leftphototransistor >= 1.00 && rightphototransistor >= 1.00){
+      digitalWrite(fanmotor, HIGH);
+    }
   }
-}
+  delay(10);
 
-long ultrasonic(int trigPin, int echoPin){
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(5);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  long duration = pulseIn(echoPin, HIGH);
-
-  return duration/58;
 }
