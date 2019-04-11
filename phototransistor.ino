@@ -43,7 +43,7 @@ void setup() {
   digitalWrite(8,LOW);//disengage brakes
 
   digitalWrite(12,0);
-  digitalWrite(13,0);//direction
+  digitalWrite(13,1);//direction
 
   Serial.begin(9600);
 }
@@ -60,13 +60,13 @@ void loop() {
 
   if (leftphototransistor >= 0.5 || rightphototransistor >= 0.5){
     if (leftphototransistor > rightphototransistor){
-      analogWrite(rightmotor, 63);
-      analogWrite(leftmotor, 31);
+      analogWrite(rightmotor, 95);
+      analogWrite(leftmotor, 0);
       Serial.println("Turn Left");
     }
     else if(rightphototransistor > leftphototransistor){
-      analogWrite(rightmotor, 31);
-      analogWrite(leftmotor, 63);
+      analogWrite(rightmotor, 0);
+      analogWrite(leftmotor, 95);
       Serial.println("Turn Right");
     }
 
@@ -74,6 +74,11 @@ void loop() {
       digitalWrite(fanmotor, HIGH);
     }
   }
-  delay(10);
+  else{
+    analogWrite(rightmotor, 0);
+    analogWrite(leftmotor, 0);
+    digitalWrite(fanmotor, LOW);
+  }
+  delay(500);
 
 }
