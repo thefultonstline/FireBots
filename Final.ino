@@ -11,8 +11,7 @@ Current Sensing     Analog 0  Analog 1
 //RIGHT = A
 
 float right;
-float rightwallvalue = 1.7;
-float front;
+int front;
 float rightphototransistor;
 float leftphototransistor;
 
@@ -20,8 +19,7 @@ int fronttrigger = 7;
 int frontecho = 10;
 int fanmotor = 2;
 
-float leftMotorForward = 127;
-float rightMotorForward = 127;
+
 
 void setup() {
   pinMode(12, OUTPUT); //Initiates Motor Channel A pin
@@ -61,7 +59,7 @@ void loop() {
   Serial.println(rightphototransistor);
 
 
-  if (leftphototransistor >= 2.0 || rightphototransistor >= 2.0){
+  if (leftphototransistor >= 1.5 || rightphototransistor >= 1.5){
     extinguish();
     return;
   }
@@ -70,15 +68,13 @@ void loop() {
   /*
   
     Serial.print("Righton  ");
-
   Serial.print(right);
     Serial.print(",  froant  ");
-
     Serial.println(front);
 */
 
   if(front > 20){
-    if (right < rightwallvalue){
+    if (right < 1.7){
     //Turn Right
     analogWrite(11, 127);//left motor
     analogWrite(3, 31);//right motor
@@ -90,7 +86,7 @@ void loop() {
          // Serial.println("leanleft");
 
     }
-     else if (right <= 2.75 && right > rightwallvalue){//straight
+     else if (right <= 2.75 && right > 1.7){//straight
       analogWrite(11, 127);//left motor
       analogWrite(3, 127);//right motor  
                // Serial.println("striaght");
@@ -100,11 +96,11 @@ void loop() {
   }
 
   if (front <= 20 && front > 7){//
-    if (right >= rightwallvalue){//right is near
+    if (right >= 1.7){//right is near
       analogWrite(3, 127);
       analogWrite(11, 0);//turning left
     }
-    else if (right < rightwallvalue){//right is far, sw room
+    else if (right < 1.7){//right is far, sw room
       analogWrite(3, 0);
       analogWrite(11, 127);//turning right?
     }
@@ -128,10 +124,10 @@ void backupAndTurnLeft(){
 //turnleft
   analogWrite(3, 127);
   analogWrite(11, 0);
-  delay(1000);
+  delay(750);
 }
 
-long ultrasonic(int trigPin, int echoPin){
+int ultrasonic(int trigPin, int echoPin){
   digitalWrite(trigPin, LOW);
   delayMicroseconds(5);
   digitalWrite(trigPin, HIGH);
@@ -145,15 +141,21 @@ long ultrasonic(int trigPin, int echoPin){
 
 void extinguish(){
   if (leftphototransistor > rightphototransistor){
-    analogWrite(3, 95);
+    analogWrite(3, 63);
     analogWrite(11, 0);
   }
-  else if (rightphototransistor < leftphototransistor){
-    analogWrite(3, 0);
-    analogWrite(11, 95);
+  else if (rightphototransistor < leftphototransistor){//turning right
+    if (right > 2.75){
+      analogWrite(3, 63);
+      analogWrite(11, 63);
+    }
+    else{
+      analogWrite(3, 0);
+      analogWrite(11, 63);
+    }
   }
 
-  if (leftphototransistor >= 3.00 && rightphototransistor >= 3.00){
+  if (leftphototransistor >= 2.00 && rightphototransistor >= 2.00){
       digitalWrite(fanmotor, HIGH);
       digitalWrite(9, HIGH);
       digitalWrite(8, HIGH);
