@@ -10,7 +10,7 @@ Current Sensing     Analog 0  Analog 1
 //LEFT = B
 //RIGHT = A
 
-float right;
+float rightir;
 int front;
 float rightphototransistor;
 float leftphototransistor;
@@ -19,89 +19,80 @@ int fronttrigger = 7;
 int frontecho = 10;
 int fanmotor = 2;
 
+int leftdirection = 13;
+int rightdirection = 12;
+int leftspeed = 11;
+int rightspeed = 3;
+int leftbrake = 8;
+int rightbrake = 9;
+
 
 
 void setup() {
-  pinMode(12, OUTPUT); //Initiates Motor Channel A pin
-  pinMode(9, OUTPUT); //Initiates Brake Channel A pin
+  pinMode(rightdirection, OUTPUT); //Initiates Motor Channel A direction pin
+  pinMode(rightbrake, OUTPUT); //Initiates Brake Channel A pin
 
   //Setup Channel B-left
-  pinMode(13, OUTPUT); //Initiates Motor Channel A pin
-  pinMode(8, OUTPUT);  //Initiates Brake Channel A pin
+  pinMode(leftdirection, OUTPUT); //Initiates Motor Channel B direction pin
+  pinMode(leftbrake, OUTPUT);  //Initiates Brake Channel B pin
 
 
-  digitalWrite(9,LOW);
-  digitalWrite(8,LOW);//disengage brakes
+  digitalWrite(rightbrake,LOW);
+  digitalWrite(leftbrake,LOW);//disengage brakes
 
-  digitalWrite(12,0);
-  digitalWrite(13,1);//direction
+  digitalWrite(rightdirection,LOW);
+  digitalWrite(leftdirection,HIGH);//direction
 
   pinMode(A3, INPUT);
   pinMode(A4, INPUT);
   pinMode(A5, INPUT);
 
 
-  pinMode(10, INPUT);
-  pinMode(7, OUTPUT);
+  pinMode(frontecho, INPUT);
+  pinMode(fronttrigger, OUTPUT);
   pinMode(fanmotor, OUTPUT);
-  Serial.begin(9600);
 
 }
 
 void loop() {
-  right = (analogRead(A3))*5.0/1024.0;
+  rightir = (analogRead(A3))*5.0/1024.0;
   front = ultrasonic(fronttrigger, frontecho);
   rightphototransistor = (analogRead(A4))*5.0/1024.0;
   leftphototransistor = (analogRead(A5))*5.0/1024.0;
 
-  Serial.print(leftphototransistor);
-  Serial.print("\t");
-  Serial.println(rightphototransistor);
-
-
-  if (leftphototransistor >= 1.5 || rightphototransistor >= 1.5){
+  delay(100);//delay for registers to update
+  
+  if (leftphototransistor >= 2.00 || rightphototransistor >= 2.00){
     extinguish();
-    return;
+    return;//ends the loop cycle early-> goes back to beginning
   }
 
 
-  /*
-  
-    Serial.print("Righton  ");
-  Serial.print(right);
-    Serial.print(",  froant  ");
-    Serial.println(front);
-*/
-
   if(front > 20){
-    if (right < 1.7){
+    if (rightir < 1.7){
     //Turn Right
-    analogWrite(11, 127);//left motor
-    analogWrite(3, 31);//right motor
-    //Serial.println("turn right");
+      analogWrite(leftspeed, 127);//left motor
+      analogWrite(rightspeed, 31);//right motor
     }
-    else if (right > 2.75){
-      analogWrite(11, 95);//left motor
-      analogWrite(3, 127);//right motor
-         // Serial.println("leanleft");
+    else if (rightir > 2.75){
+      analogWrite(leftspeed, 95);//left motor
+      analogWrite(rightspeed, 127);//right motor
 
     }
-     else if (right <= 2.75 && right > 1.7){//straight
-      analogWrite(11, 127);//left motor
-      analogWrite(3, 127);//right motor  
-               // Serial.println("striaght");
-
+     else if (rightir <= 2.75 && rightir > 1.7){//straight
+      analogWrite(leftspeed, 127);//left motor
+      analogWrite(rightspeed, 127);//right motor  
     }
     
   }
 
   if (front <= 20 && front > 7){//
-    if (right >= 1.7){//right is near
-      analogWrite(3, 127);
+    if (rightir >= 1.7){//right is near
+      analogWrite(rightspeed, 127);
       analogWrite(11, 0);//turning left
     }
-    else if (right < 1.7){//right is far, sw room
-      analogWrite(3, 0);
+    else if (rightir < 1.7){//right is far, sw room
+      analogWrite(rightspeed, 0);
       analogWrite(11, 127);//turning right?
     }
   }
@@ -114,17 +105,17 @@ void loop() {
 void backupAndTurnLeft(){
 
 //run motors backward
-  digitalWrite(12,1);
-  digitalWrite(13,0);
-  analogWrite(3, 95);
-  analogWrite(11, 95);
+  digitalWrite(rightdirection,HIGH);
+  digitalWrite(leftdirection,LOW);
+  analogWrite(rightspeed, 95);
+  analogWrite(leftspeed, 95);
   delay(750);
-  digitalWrite(12,0);
-  digitalWrite(13,1);
+  digitalWrite(rightdirection,LOW);
+  digitalWrite(leftdirection,HIGH);
 //turnleft
-  analogWrite(3, 127);
-  analogWrite(11, 0);
-  delay(750);
+  analogWrite(rightspeed, 127);
+  analogWrite(leftspeed, 0);
+  delay(1000);
 }
 
 int ultrasonic(int trigPin, int echoPin){
@@ -141,23 +132,23 @@ int ultrasonic(int trigPin, int echoPin){
 
 void extinguish(){
   if (leftphototransistor > rightphototransistor){
-    analogWrite(3, 63);
-    analogWrite(11, 0);
+    analogWrite(rightspeed, 63);//turn left
+    analogWrite(leftspeed, 0);
   }
   else if (rightphototransistor < leftphototransistor){//turning right
-    if (right > 2.75){
-      analogWrite(3, 63);
-      analogWrite(11, 63);
+    if (rightir > 2.75){//if close to wall go straight instead
+      analogWrite(rightspeed, 63);
+      analogWrite(leftspeed, 63);
     }
-    else{
-      analogWrite(3, 0);
-      analogWrite(11, 63);
+    else{//turn to right
+      analogWrite(rightspeed, 0);
+      analogWrite(leftspeed, 63);
     }
   }
 
-  if (leftphototransistor >= 2.00 && rightphototransistor >= 2.00){
-      digitalWrite(fanmotor, HIGH);
-      digitalWrite(9, HIGH);
-      digitalWrite(8, HIGH);
+  if (leftphototransistor >= 4.00 || rightphototransistor >= 4.00){
+      digitalWrite(fanmotor, HIGH);//turn on fan
+      digitalWrite(rightbrake, HIGH);//stop robot
+      digitalWrite(leftbrake, HIGH);
     }
 }
